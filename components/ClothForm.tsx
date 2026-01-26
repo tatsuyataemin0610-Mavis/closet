@@ -790,50 +790,42 @@ export default function ClothForm({ onSubmit, initialData }: ClothFormProps) {
 
     setProcessing(true);
     try {
-      // 動態載入客戶端去背套件
-      console.log('📦 載入去背套件...');
-      const module = await import('@imgly/background-removal');
-      const removeBackground = module.removeBackground;
-      console.log('✅ 去背套件載入成功');
+      // 使用 Replicate API 進行去背
+      console.log('🔄 開始使用 Replicate API 去背...');
+      console.log('原始圖片:', imageUrl);
       
-      // 取得原始圖片
-      console.log('📥 取得原始圖片...');
-      const response = await fetch(imageUrl);
-      if (!response.ok) {
-        throw new Error('無法載入圖片');
-      }
-      let blob = await response.blob();
-      console.log('✅ 原始圖片載入成功，大小:', (blob.size / 1024).toFixed(2), 'KB');
-      console.log('   - 原始圖片格式:', blob.type);
-      
-      // 如果圖片是 AVIF 格式，需要先轉換為 PNG/JPEG（removeBackground 不支持 AVIF）
-      if (blob.type === 'image/avif' || blob.type === 'image/avif-sequence') {
-        console.log('⚠️ 檢測到 AVIF 格式，轉換為 PNG...');
-        try {
-          blob = await convertAvifToPng(blob);
-          console.log('✅ AVIF 轉換為 PNG 成功，新格式:', blob.type);
-        } catch (convertError: any) {
-          console.error('❌ AVIF 轉換失敗:', convertError);
-          throw new Error(`不支持的圖片格式: ${blob.type}。請使用 PNG、JPEG 或 WebP 格式。`);
-        }
-      }
-      
-      // 進行本地去背（保持透明背景）
-      // 使用高質量模型來改善去背效果（isnet_fp16 比 isnet_quint8 質量更好）
-      console.log('🔄 開始本地去背（高質量模式）...');
-      let processedBlob = await removeBackground(blob, {
-        output: {
-          format: 'image/png', // PNG 格式支持透明背景
-          quality: 1.0, // 最高質量
+      const removeResponse = await fetch('/api/remove-background', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        model: 'isnet_fp16', // 使用高精度模型（比 isnet_quint8 質量更好，但稍慢）
-        progress: (key: string, current: number, total: number) => {
-          console.log(`去背進度: ${key} - ${current}/${total}`);
-        },
+        body: JSON.stringify({ imageUrl }),
       });
-      console.log('✅ 去背完成！');
-      console.log('   - 去背後 Blob 類型:', processedBlob.type);
-      console.log('   - 去背後大小:', (processedBlob.size / 1024).toFixed(2), 'KB');
+      
+      if (!removeResponse.ok) {
+        const errorData = await removeResponse.json();
+        throw new Error(errorData.error || '去背 API 調用失敗');
+      }
+      
+      const removeResult = await removeResponse.json();
+      
+      if (!removeResult.success) {
+        throw new Error(removeResult.error || '去背處理失敗');
+      }
+      
+      const replicateImageUrl = removeResult.data.imageUrl;
+      console.log('✅ Replicate 去背完成！');
+      console.log('   - 去背圖片 URL:', replicateImageUrl);
+      
+      // 下載去背後的圖片
+      console.log('📥 下載去背後的圖片...');
+      const response = await fetch(replicateImageUrl);
+      if (!response.ok) {
+        throw new Error('無法下載去背後的圖片');
+      }
+      let processedBlob = await response.blob();
+      console.log('✅ 圖片下載成功，大小:', (processedBlob.size / 1024).toFixed(2), 'KB');
+      console.log('   - 圖片格式:', processedBlob.type);
 
       // 邊緣處理：改善去背質量，去除邊緣殘留
       console.log('🔄 開始邊緣處理...');
