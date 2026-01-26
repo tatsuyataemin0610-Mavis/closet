@@ -4,7 +4,15 @@ import { createBrowserClient } from '@supabase/ssr';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true, // 持久化 session
+    storageKey: 'closet-auth', // 自定義存儲 key
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined, // 使用 localStorage
+    autoRefreshToken: true, // 自動刷新 token
+    detectSessionInUrl: true, // 從 URL 檢測 session
+  },
+});
 
 // 类型定义
 export interface Cloth {

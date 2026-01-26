@@ -16,7 +16,14 @@ export function createClient() {
         },
         set(name: string, value: string, options: CookieOptions) {
           try {
-            cookieStore.set({ name, value, ...options });
+            // 確保 cookie 持久化（30 天）
+            const cookieOptions = {
+              ...options,
+              maxAge: options.maxAge || 60 * 60 * 24 * 30, // 30 天
+              sameSite: 'lax' as const,
+              secure: process.env.NODE_ENV === 'production',
+            };
+            cookieStore.set({ name, value, ...cookieOptions });
           } catch (error) {
             // The `set` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
