@@ -14,11 +14,33 @@ export default function MePage() {
 
   useEffect(() => {
     async function getUser() {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      setLoading(false);
+      try {
+        // 先嘗試從 session 獲取用戶
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          setUser(session.user);
+        } else {
+          // 如果沒有 session，嘗試刷新
+          const { data: { user } } = await supabase.auth.getUser();
+          setUser(user);
+        }
+      } catch (error) {
+        console.error('獲取用戶資訊失敗:', error);
+      } finally {
+        setLoading(false);
+      }
     }
     getUser();
+    
+    // 監聽認證狀態變化
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleLogout = async () => {
