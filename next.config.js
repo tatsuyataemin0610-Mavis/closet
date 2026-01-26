@@ -12,18 +12,15 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // 轉譯特定套件
-  transpilePackages: ['@imgly/background-removal'],
-  webpack: (config, { isServer, webpack }) => {
-    // 在服務端完全排除客戶端專用套件
+  webpack: (config, { isServer }) => {
+    // MediaPipe 套件只在客戶端使用，跳過服務端解析
     if (isServer) {
-      // 使用 NormalModuleReplacementPlugin 替換模組
-      config.plugins.push(
-        new webpack.NormalModuleReplacementPlugin(
-          /@imgly\/background-removal/,
-          require.resolve('./lib/noop.js')
-        )
-      );
+      config.externals = config.externals || [];
+      config.externals.push({
+        '@mediapipe/pose': 'commonjs @mediapipe/pose',
+        '@imgly/background-removal': 'commonjs @imgly/background-removal',
+        'sharp': 'commonjs sharp',
+      });
     }
     
     // 處理 Node.js 模組
@@ -32,7 +29,6 @@ const nextConfig = {
       fs: false,
       net: false,
       tls: false,
-      canvas: false,
     };
     
     return config;
