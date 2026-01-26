@@ -813,28 +813,27 @@ export default function ClothForm({ onSubmit, initialData }: ClothFormProps) {
         throw new Error(removeResult.error || '去背處理失敗');
       }
       
-      const replicateImageUrl = removeResult.data.imageUrl;
-      console.log('✅ Replicate 去背完成！');
-      console.log('   - 去背圖片 URL:', replicateImageUrl);
+      const processedImageUrl = removeResult.data.imageUrl;
+      console.log('✅ 去背完成！服務器已處理並上傳圖片');
+      console.log('   - 去背圖片 URL:', processedImageUrl);
       
-      // 下載去背後的圖片
-      console.log('📥 下載去背後的圖片...');
-      const response = await fetch(replicateImageUrl);
+      // 下載圖片以提取顏色
+      console.log('📥 下載圖片以提取顏色...');
+      const response = await fetch(processedImageUrl);
       if (!response.ok) {
-        throw new Error('無法下載去背後的圖片');
+        console.warn('⚠️ 無法下載圖片進行顏色提取，跳過此步驟');
+        // 即使顏色提取失敗，仍然更新去背圖片
+        setFormData(prev => ({
+          ...prev,
+          image_processed_url: processedImageUrl,
+        }));
+        console.log('✅ 去背處理完成（跳過顏色提取）！');
+        setProcessing(false);
+        return;
       }
-      let processedBlob = await response.blob();
-      console.log('✅ 圖片下載成功，大小:', (processedBlob.size / 1024).toFixed(2), 'KB');
-      console.log('   - 圖片格式:', processedBlob.type);
-
-      // 邊緣處理：改善去背質量，去除邊緣殘留
-      console.log('🔄 開始邊緣處理...');
-      try {
-        processedBlob = await refineEdges(processedBlob);
-        console.log('✅ 邊緣處理完成！');
-      } catch (edgeError) {
-        console.warn('⚠️ 邊緣處理失敗，使用原始去背結果:', edgeError);
-      }
+      
+      const processedBlob = await response.blob();
+      console.log('✅ 圖片下載成功');
 
       // 提取顏色（從去背後的圖片）
       console.log('🔄 開始提取顏色...');
@@ -865,41 +864,14 @@ export default function ClothForm({ onSubmit, initialData }: ClothFormProps) {
         console.error('❌ 顏色提取失敗:', colorError);
       }
       
-      // 上傳去背後的圖片
-      console.log('🔄 開始上傳去背後的圖片...');
-      const formDataToSend = new FormData();
-      formDataToSend.append('file', processedBlob, 'processed.png');
+      // 更新表單數據
+      setFormData(prev => ({
+        ...prev,
+        color: detectedColor || prev.color,
+        image_processed_url: processedImageUrl,
+      }));
       
-      const uploadResponse = await fetch('/api/upload/processed', {
-        method: 'POST',
-        body: formDataToSend,
-      });
-      
-      if (!uploadResponse.ok) {
-        const errorText = await uploadResponse.text();
-        console.error('❌ 上傳失敗，響應內容:', errorText);
-        throw new Error(`上傳失敗: ${uploadResponse.status} ${uploadResponse.statusText}`);
-      }
-      
-      const uploadResult = await uploadResponse.json();
-      
-      if (uploadResult.success) {
-        const processedImageUrl = uploadResult.data.imageUrl;
-        console.log('✅ 上傳成功！');
-        console.log('   - 去背圖路徑:', processedImageUrl);
-        
-        // 更新表單數據
-        setFormData(prev => ({
-          ...prev,
-          color: detectedColor || prev.color,
-          image_processed_url: processedImageUrl,
-        }));
-        
-        console.log('✅ 去背處理完成！');
-      } else {
-        console.error('❌ 上傳響應顯示失敗:', uploadResult);
-        throw new Error(uploadResult.error || '上傳失敗');
-      }
+      console.log('✅ 去背處理完成！');
     } catch (error: any) {
       console.error('❌ 處理流程失敗:', error);
       console.error('錯誤詳情:', {
