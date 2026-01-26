@@ -32,6 +32,20 @@ export async function uploadToStorage(
     const nameParts = file.name.split('.');
     ext = nameParts.length > 1 ? nameParts[nameParts.length - 1] : 'png';
     originalName = nameParts[0];
+    
+    // 清理文件名：移除中文、空格和特殊字符
+    // 只保留字母、數字、連字符和下劃線
+    originalName = originalName
+      .replace(/[\u4e00-\u9fa5]/g, '') // 移除中文字符
+      .replace(/[^\w\-]/g, '_') // 將非字母數字字符替換為下劃線
+      .replace(/_{2,}/g, '_') // 將連續的下劃線替換為單個
+      .replace(/^_+|_+$/g, '') // 移除開頭和結尾的下劃線
+      .substring(0, 50); // 限制長度
+    
+    // 如果清理後為空，使用預設名稱
+    if (!originalName) {
+      originalName = 'image';
+    }
   }
   
   const filename = `${timestamp}_${randomStr}_${originalName}.${ext}`;
