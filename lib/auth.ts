@@ -12,12 +12,18 @@ export async function signUp(email: string, password: string) {
 }
 
 export async function signIn(email: string, password: string) {
+  console.log('📧 調用 signIn:', { email });
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
   
-  if (error) throw error;
+  console.log('📊 Supabase 回應:', { data, error });
+  
+  if (error) {
+    console.error('❌ Supabase 錯誤:', error);
+    throw error;
+  }
   return data;
 }
 

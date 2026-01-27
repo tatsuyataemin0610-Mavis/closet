@@ -18,10 +18,13 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await signIn(email, password);
+      console.log('🔐 開始登入...', { email });
+      const result = await signIn(email, password);
+      console.log('✅ 登入成功！', result);
       router.push('/closet');
       router.refresh();
     } catch (err: any) {
+      console.error('❌ 登入失敗:', err);
       setError(err.message || '登入失敗，請檢查帳號和密碼');
     } finally {
       setLoading(false);
