@@ -78,6 +78,26 @@ export default function Home() {
     fetchDrawers();
   }, []);
 
+  // 滾動到指定的衣服（從編輯頁返回時）
+  useEffect(() => {
+    // 檢查 URL hash
+    const hash = window.location.hash;
+    if (hash && clothes.length > 0) {
+      // 等待 DOM 渲染完成
+      setTimeout(() => {
+        const element = document.querySelector(hash);
+        if (element) {
+          element.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+          // 清除 hash（可選）
+          // window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+      }, 300);
+    }
+  }, [clothes]);
+
   const fetchDrawers = async () => {
     try {
       console.log('開始獲取抽屜列表...');
@@ -645,6 +665,7 @@ export default function Home() {
                 return (
                   <div
                     key={cloth.id}
+                    id={`cloth-${cloth.id}`}
                     className={`group relative bg-white/90 backdrop-blur-md rounded-3xl shadow-xl overflow-hidden transition-all duration-500 border-2 flex flex-col max-h-[calc(85vh-100px)] ${
                       isSelectionMode
                         ? isSelected

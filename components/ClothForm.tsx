@@ -1006,8 +1006,13 @@ export default function ClothForm({ onSubmit, initialData }: ClothFormProps) {
           }
         }
         
-        // 成功後跳轉到首頁
-        router.push('/');
+        // 成功後跳轉到首頁，並添加 hash 以便滾動到該衣服
+        const clothId = resultData.data?.id || resultData.id || (initialData as any)?.id;
+        if (clothId) {
+          router.push(`/#cloth-${clothId}`);
+        } else {
+          router.push('/');
+        }
       } else if (selectedDrawerIds.size > 0) {
         console.warn('表單提交結果:', result, '選中的抽屜:', Array.from(selectedDrawerIds));
       }
@@ -2393,7 +2398,14 @@ export default function ClothForm({ onSubmit, initialData }: ClothFormProps) {
         <div className="flex gap-4">
           <button
             type="button"
-            onClick={() => router.push('/')}
+            onClick={() => {
+              // 如果是編輯模式，返回時滾動到該衣服
+              if (initialData && (initialData as any).id) {
+                router.push(`/#cloth-${(initialData as any).id}`);
+              } else {
+                router.push('/');
+              }
+            }}
             className="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-700 py-3.5 rounded-xl font-semibold transition-all duration-200 hover:shadow-md active:scale-95 border-2 border-stone-200"
           >
             取消
