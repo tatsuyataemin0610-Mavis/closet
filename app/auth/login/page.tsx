@@ -16,15 +16,23 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
+    
+    console.log('📝 表單提交，準備登入...');
 
     try {
       console.log('🔐 開始登入...', { email });
       const result = await signIn(email, password);
       console.log('✅ 登入成功！', result);
       
+      // 短暫延遲確保 cookie 設置完成
+      console.log('⏳ 等待 500ms 確保 cookie 設置完成...');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       // 使用 window.location 強制完整頁面刷新，確保 session 被正確載入
-      console.log('🔄 跳轉到 /closet...');
+      console.log('🔄 即將跳轉到 /closet...');
+      console.log('當前 URL:', window.location.href);
       window.location.href = '/closet';
+      console.log('✅ 跳轉指令已執行');
     } catch (err: any) {
       console.error('❌ 登入失敗:', err);
       setError(err.message || '登入失敗，請檢查帳號和密碼');
