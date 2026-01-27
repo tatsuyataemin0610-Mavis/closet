@@ -82,11 +82,19 @@ export default function Home() {
     try {
       console.log('開始獲取抽屜列表...');
       const response = await fetch('/api/drawers');
+      
+      // 如果未授權（登出後），直接設為空數組
+      if (response.status === 401) {
+        console.log('未授權，清空抽屜列表');
+        setDrawers([]);
+        return;
+      }
+      
       console.log('抽屜 API 回應狀態:', response.status);
       const result = await response.json();
       console.log('首頁抽屜列表 API 回應:', result);
-      if (result.success) {
-        const drawersList = result.data || [];
+      if (result.success && Array.isArray(result.data)) {
+        const drawersList = result.data;
         console.log('首頁載入的抽屜:', drawersList, '數量:', drawersList.length);
         setDrawers(drawersList);
       } else {
@@ -159,12 +167,20 @@ export default function Home() {
       
       clearTimeout(timeoutId);
       
+      // 如果未授權（登出後），直接設為空數組
+      if (response.status === 401) {
+        console.log('未授權，清空衣服列表');
+        setClothes([]);
+        setLoading(false);
+        return;
+      }
+      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const result = await response.json();
-      if (result.success) {
-        setClothes(result.data || []);
+      if (result.success && Array.isArray(result.data)) {
+        setClothes(result.data);
       } else {
         console.error('載入失敗:', result.error);
         setClothes([]);
@@ -807,7 +823,7 @@ export default function Home() {
             
             <div className="flex-1 space-y-2 mb-6 overflow-y-auto">
               {(() => {
-                if (drawers.length > 0) {
+                if (Array.isArray(drawers) && drawers.length > 0) {
                   console.log('顯示抽屜列表，數量:', drawers.length);
                   return (
                     <>
