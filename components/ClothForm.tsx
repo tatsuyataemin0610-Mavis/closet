@@ -945,13 +945,14 @@ export default function ClothForm({ onSubmit, initialData }: ClothFormProps) {
       if (result && typeof result === 'object' && 'success' in result && (result as { success: boolean }).success) {
         // 清除草稿
         clearDraft();
+        
+        // 提取衣服 ID（在外部作用域定義，避免 ReferenceError）
+        const resultData = result as { success: boolean; data?: { id?: number }; id?: number };
+        const clothId = resultData.data?.id || resultData.id || (initialData as any)?.id;
+        
         // 如果選中了抽屜，將衣服添加到抽屜中
-        if (selectedDrawerIds.size > 0) {
+        if (selectedDrawerIds.size > 0 && clothId) {
           try {
-            // 嘗試從不同可能的結果結構中獲取 ID
-            // API 返回: { success: true, data: { id: ... } }
-            const resultData = result as { success: boolean; data?: { id?: number }; id?: number };
-            const clothId = resultData.data?.id || resultData.id;
             
             if (clothId) {
               console.log('準備將衣服 ID:', clothId, '加入抽屜:', Array.from(selectedDrawerIds));
@@ -1007,7 +1008,6 @@ export default function ClothForm({ onSubmit, initialData }: ClothFormProps) {
         }
         
         // 成功後跳轉到首頁，並添加 hash 以便滾動到該衣服
-        const clothId = resultData.data?.id || resultData.id || (initialData as any)?.id;
         if (clothId) {
           router.push(`/#cloth-${clothId}`);
         } else {
