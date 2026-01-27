@@ -102,10 +102,10 @@ export default function ClothForm({ onSubmit, initialData }: ClothFormProps) {
     notes: initialData?.notes || '',
     image_url: initialData?.image_url || '',
     image_processed_url: initialData?.image_processed_url || '',
-    care_label_url: initialData?.care_label_url ? (Array.isArray(initialData.care_label_url) ? initialData.care_label_url : initialData.care_label_url.split(',').filter(Boolean)) : [],
-    brand_label_url: initialData?.brand_label_url ? (Array.isArray(initialData.brand_label_url) ? initialData.brand_label_url : initialData.brand_label_url.split(',').filter(Boolean)) : [],
-    back_view_url: initialData?.back_view_url ? (Array.isArray(initialData.back_view_url) ? initialData.back_view_url : (typeof initialData.back_view_url === 'string' && initialData.back_view_url ? initialData.back_view_url.split(',').filter(Boolean) : [])) : [],
-    material_photo_url: initialData?.material_photo_url ? (Array.isArray(initialData.material_photo_url) ? initialData.material_photo_url : (typeof initialData.material_photo_url === 'string' && initialData.material_photo_url ? initialData.material_photo_url.split(',').filter(Boolean) : [])) : [],
+    care_label_url: initialData?.care_label_url ? (Array.isArray(initialData.care_label_url) ? initialData.care_label_url.filter(Boolean) : initialData.care_label_url.split(',').filter(Boolean)) : [],
+    brand_label_url: initialData?.brand_label_url ? (Array.isArray(initialData.brand_label_url) ? initialData.brand_label_url.filter(Boolean) : initialData.brand_label_url.split(',').filter(Boolean)) : [],
+    back_view_url: initialData?.back_view_url ? (Array.isArray(initialData.back_view_url) ? initialData.back_view_url.filter(Boolean) : (typeof initialData.back_view_url === 'string' && initialData.back_view_url ? initialData.back_view_url.split(',').filter(Boolean) : [])) : [],
+    material_photo_url: initialData?.material_photo_url ? (Array.isArray(initialData.material_photo_url) ? initialData.material_photo_url.filter(Boolean) : (typeof initialData.material_photo_url === 'string' && initialData.material_photo_url ? initialData.material_photo_url.split(',').filter(Boolean) : [])) : [],
   });
 
   // 獲取所有已存在的品牌
@@ -926,14 +926,16 @@ export default function ClothForm({ onSubmit, initialData }: ClothFormProps) {
         occasion: formData.occasion === '其他' ? customOccasion : formData.occasion,
         price: formData.price ? parseFloat(formData.price as string) : null,
         seasons: formData.seasons.join(','),
-        care_label_url: (formData.care_label_url as string[]).length > 0 ? (formData.care_label_url as string[]).join(',') : undefined,
-        brand_label_url: (formData.brand_label_url as string[]).length > 0 ? (formData.brand_label_url as string[]).join(',') : undefined,
+        care_label_url: (formData.care_label_url as string[]).filter(Boolean).length > 0 ? (formData.care_label_url as string[]).filter(Boolean).join(',') : null,
+        brand_label_url: (formData.brand_label_url as string[]).filter(Boolean).length > 0 ? (formData.brand_label_url as string[]).filter(Boolean).join(',') : null,
+        back_view_url: (formData.back_view_url as string[]).filter(Boolean).length > 0 ? (formData.back_view_url as string[]).filter(Boolean).join(',') : null,
+        material_photo_url: (formData.material_photo_url as string[]).filter(Boolean).length > 0 ? (formData.material_photo_url as string[]).filter(Boolean).join(',') : null,
       };
       
-      // 清理空字串，轉為 undefined
+      // 清理空字串，轉為 null
       Object.keys(submitData).forEach(key => {
         if (submitData[key as keyof typeof submitData] === '') {
-          submitData[key as keyof typeof submitData] = undefined;
+          submitData[key as keyof typeof submitData] = null;
         }
       });
       
@@ -1485,20 +1487,21 @@ export default function ClothForm({ onSubmit, initialData }: ClothFormProps) {
 
             {/* 單品背面照 */}
             <div className="relative">
-              {(formData.back_view_url as string[]).length > 0 ? (
+              {(formData.back_view_url as string[]).filter(Boolean).length > 0 && (formData.back_view_url as string[])[0] ? (
                 <div className="relative bg-gradient-to-br from-stone-50 to-stone-100 rounded-xl border-2 border-gray-200 overflow-hidden cursor-pointer" style={{ aspectRatio: '1', minHeight: '120px' }}>
                   <Image 
-                    src={(formData.back_view_url as string[])[0]} 
+                    src={(formData.back_view_url as string[]).filter(Boolean)[0]} 
                     alt="單品背面照" 
                     fill 
                     style={{ objectFit: 'contain' }} 
                     className="p-2 hover:opacity-80 transition-opacity" 
-                    onClick={() => setEnlargedImage((formData.back_view_url as string[])[0])}
+                    onClick={() => setEnlargedImage((formData.back_view_url as string[]).filter(Boolean)[0])}
                     onError={(e) => {
                       console.error('背面照片加載失敗:', (formData.back_view_url as string[])[0]);
-                      // 圖片加載失敗時的處理
+                      // 圖片加載失敗時的處理 - 從數組中移除無效的 URL
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
+                      setFormData(prev => ({ ...prev, back_view_url: [] }));
                     }}
                   />
                   <button
@@ -1544,15 +1547,21 @@ export default function ClothForm({ onSubmit, initialData }: ClothFormProps) {
 
             {/* 領口品牌標 */}
             <div className="relative">
-              {(formData.brand_label_url as string[]).length > 0 ? (
+              {(formData.brand_label_url as string[]).filter(Boolean).length > 0 && (formData.brand_label_url as string[])[0] ? (
                 <div className="relative bg-gradient-to-br from-stone-50 to-stone-100 rounded-xl border-2 border-gray-200 overflow-hidden cursor-pointer" style={{ aspectRatio: '1', minHeight: '120px' }}>
                   <Image 
-                    src={(formData.brand_label_url as string[])[0]} 
+                    src={(formData.brand_label_url as string[]).filter(Boolean)[0]} 
                     alt="領口品牌標" 
                     fill 
                     style={{ objectFit: 'contain' }} 
                     className="p-2 hover:opacity-80 transition-opacity" 
-                    onClick={() => setEnlargedImage((formData.brand_label_url as string[])[0])}
+                    onClick={() => setEnlargedImage((formData.brand_label_url as string[]).filter(Boolean)[0])}
+                    onError={(e) => {
+                      console.error('品牌標加載失敗:', (formData.brand_label_url as string[])[0]);
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      setFormData(prev => ({ ...prev, brand_label_url: [] }));
+                    }}
                   />
                   <button
                     type="button"
@@ -1597,19 +1606,25 @@ export default function ClothForm({ onSubmit, initialData }: ClothFormProps) {
 
             {/* 洗標（支持多張） */}
             <div className="relative">
-              {(formData.care_label_url as string[]).length > 0 ? (
+              {(formData.care_label_url as string[]).filter(Boolean).length > 0 && (formData.care_label_url as string[])[0] ? (
                 <div className="relative bg-gradient-to-br from-stone-50 to-stone-100 rounded-xl border-2 border-gray-200 overflow-hidden cursor-pointer" style={{ aspectRatio: '1', minHeight: '120px' }}>
                   <Image 
-                    src={(formData.care_label_url as string[])[0]} 
+                    src={(formData.care_label_url as string[]).filter(Boolean)[0]} 
                     alt="洗標" 
                     fill 
                     style={{ objectFit: 'contain' }} 
                     className="p-2 hover:opacity-80 transition-opacity" 
-                    onClick={() => setEnlargedImage((formData.care_label_url as string[])[0])}
+                    onClick={() => setEnlargedImage((formData.care_label_url as string[]).filter(Boolean)[0])}
+                    onError={(e) => {
+                      console.error('洗標加載失敗:', (formData.care_label_url as string[])[0]);
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      setFormData(prev => ({ ...prev, care_label_url: [] }));
+                    }}
                   />
-                  {(formData.care_label_url as string[]).length > 1 && (
+                  {(formData.care_label_url as string[]).filter(Boolean).length > 1 && (
                     <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">
-                      +{(formData.care_label_url as string[]).length - 1}
+                      +{(formData.care_label_url as string[]).filter(Boolean).length - 1}
                     </div>
                   )}
                   <button
@@ -1662,20 +1677,21 @@ export default function ClothForm({ onSubmit, initialData }: ClothFormProps) {
 
             {/* 材質照片 */}
             <div className="relative">
-              {(formData.material_photo_url as string[]).length > 0 ? (
+              {(formData.material_photo_url as string[]).filter(Boolean).length > 0 && (formData.material_photo_url as string[])[0] ? (
                 <div className="relative bg-gradient-to-br from-stone-50 to-stone-100 rounded-xl border-2 border-gray-200 overflow-hidden cursor-pointer" style={{ aspectRatio: '1', minHeight: '120px' }}>
                   <Image 
-                    src={(formData.material_photo_url as string[])[0]} 
+                    src={(formData.material_photo_url as string[]).filter(Boolean)[0]} 
                     alt="材質照片" 
                     fill 
                     style={{ objectFit: 'contain' }} 
                     className="p-2 hover:opacity-80 transition-opacity" 
-                    onClick={() => setEnlargedImage((formData.material_photo_url as string[])[0])}
+                    onClick={() => setEnlargedImage((formData.material_photo_url as string[]).filter(Boolean)[0])}
                     onError={(e) => {
                       console.error('材質照片加載失敗:', (formData.material_photo_url as string[])[0]);
-                      // 圖片加載失敗時的處理
+                      // 圖片加載失敗時的處理 - 從數組中移除無效的 URL
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
+                      setFormData(prev => ({ ...prev, material_photo_url: [] }));
                     }}
                   />
                   <button
