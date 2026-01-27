@@ -86,37 +86,60 @@ export default function ClosetPage() {
     try {
       // 獲取抽屜
       const drawersRes = await fetch('/api/drawers');
-      const drawersResult = await drawersRes.json();
+      if (drawersRes.ok) {
+        const drawersResult = await drawersRes.json();
+        if (drawersResult.success && Array.isArray(drawersResult.data)) {
+          setDrawers(drawersResult.data);
+        } else {
+          setDrawers([]);
+        }
+      } else {
+        setDrawers([]);
+      }
       
       // 獲取穿搭
       const outfitsRes = await fetch('/api/outfits');
-      const outfitsResult = await outfitsRes.json();
+      if (outfitsRes.ok) {
+        const outfitsResult = await outfitsRes.json();
+        if (outfitsResult.success && Array.isArray(outfitsResult.data)) {
+          setOutfits(outfitsResult.data);
+        } else {
+          setOutfits([]);
+        }
+      } else {
+        setOutfits([]);
+      }
       
       // 獲取衣服
       const clothesRes = await fetch('/api/clothes');
-      const clothesResult = await clothesRes.json();
+      if (clothesRes.ok) {
+        const clothesResult = await clothesRes.json();
+        if (clothesResult.success && Array.isArray(clothesResult.data)) {
+          setClothes(clothesResult.data);
+        } else {
+          setClothes([]);
+        }
+      } else {
+        setClothes([]);
+      }
       
       // 獲取用戶資料
       const profileRes = await fetch('/api/user-profile');
-      const profileResult = await profileRes.json();
-      
-      if (drawersResult.success) {
-        setDrawers(drawersResult.data || []);
-      }
-      if (outfitsResult.success) {
-        setOutfits(outfitsResult.data || []);
-      }
-      if (clothesResult.success) {
-        setClothes(clothesResult.data || []);
-      }
-      if (profileResult.success && profileResult.data) {
-        setUserProfile(profileResult.data);
-        setProfileHeight(profileResult.data.height?.toString() || '');
-        setProfileWeight(profileResult.data.weight?.toString() || '');
-        setProfileGender(profileResult.data.gender || '');
+      if (profileRes.ok) {
+        const profileResult = await profileRes.json();
+        if (profileResult.success && profileResult.data) {
+          setUserProfile(profileResult.data);
+          setProfileHeight(profileResult.data.height?.toString() || '');
+          setProfileWeight(profileResult.data.weight?.toString() || '');
+          setProfileGender(profileResult.data.gender || '');
+        }
       }
     } catch (error) {
       console.error('載入失敗:', error);
+      // 確保在錯誤情況下設置空數組
+      setDrawers([]);
+      setOutfits([]);
+      setClothes([]);
     } finally {
       setLoading(false);
     }
