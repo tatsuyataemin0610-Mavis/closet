@@ -104,8 +104,8 @@ export default function ClothForm({ onSubmit, initialData }: ClothFormProps) {
     image_processed_url: initialData?.image_processed_url || '',
     care_label_url: initialData?.care_label_url ? (Array.isArray(initialData.care_label_url) ? initialData.care_label_url : initialData.care_label_url.split(',').filter(Boolean)) : [],
     brand_label_url: initialData?.brand_label_url ? (Array.isArray(initialData.brand_label_url) ? initialData.brand_label_url : initialData.brand_label_url.split(',').filter(Boolean)) : [],
-    back_view_url: initialData?.back_view_url ? (Array.isArray(initialData.back_view_url) ? initialData.back_view_url : initialData.back_view_url.split(',').filter(Boolean)) : [],
-    material_photo_url: initialData?.material_photo_url ? (Array.isArray(initialData.material_photo_url) ? initialData.material_photo_url : initialData.material_photo_url.split(',').filter(Boolean)) : [],
+    back_view_url: initialData?.back_view_url ? (Array.isArray(initialData.back_view_url) ? initialData.back_view_url : (typeof initialData.back_view_url === 'string' && initialData.back_view_url ? initialData.back_view_url.split(',').filter(Boolean) : [])) : [],
+    material_photo_url: initialData?.material_photo_url ? (Array.isArray(initialData.material_photo_url) ? initialData.material_photo_url : (typeof initialData.material_photo_url === 'string' && initialData.material_photo_url ? initialData.material_photo_url.split(',').filter(Boolean) : [])) : [],
   });
 
   // 獲取所有已存在的品牌
@@ -1494,6 +1494,12 @@ export default function ClothForm({ onSubmit, initialData }: ClothFormProps) {
                     style={{ objectFit: 'contain' }} 
                     className="p-2 hover:opacity-80 transition-opacity" 
                     onClick={() => setEnlargedImage((formData.back_view_url as string[])[0])}
+                    onError={(e) => {
+                      console.error('背面照片加載失敗:', (formData.back_view_url as string[])[0]);
+                      // 圖片加載失敗時的處理
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
                   />
                   <button
                     type="button"
@@ -1665,6 +1671,12 @@ export default function ClothForm({ onSubmit, initialData }: ClothFormProps) {
                     style={{ objectFit: 'contain' }} 
                     className="p-2 hover:opacity-80 transition-opacity" 
                     onClick={() => setEnlargedImage((formData.material_photo_url as string[])[0])}
+                    onError={(e) => {
+                      console.error('材質照片加載失敗:', (formData.material_photo_url as string[])[0]);
+                      // 圖片加載失敗時的處理
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
                   />
                   <button
                     type="button"
