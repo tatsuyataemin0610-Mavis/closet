@@ -23,15 +23,29 @@ export default function LoginPage() {
       console.log('🔐 開始登入...', { email });
       const result = await signIn(email, password);
       console.log('✅ 登入成功！', result);
+      console.log('Session:', result.session);
+      console.log('User:', result.user);
       
       // 短暫延遲確保 cookie 設置完成
-      console.log('⏳ 等待 500ms 確保 cookie 設置完成...');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log('⏳ 等待 1000ms 確保 cookie 設置完成...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // 使用 window.location 強制完整頁面刷新，確保 session 被正確載入
-      console.log('🔄 即將跳轉到 /closet...');
-      console.log('當前 URL:', window.location.href);
-      window.location.href = '/closet';
+      // 嘗試多種跳轉方式
+      console.log('🔄 嘗試跳轉方式 1: window.location.replace()');
+      try {
+        window.location.replace('/closet');
+      } catch (e) {
+        console.error('方式 1 失敗:', e);
+        console.log('🔄 嘗試跳轉方式 2: window.location.href');
+        try {
+          window.location.href = '/closet';
+        } catch (e2) {
+          console.error('方式 2 失敗:', e2);
+          console.log('🔄 嘗試跳轉方式 3: window.location.assign()');
+          window.location.assign('/closet');
+        }
+      }
+      
       console.log('✅ 跳轉指令已執行');
     } catch (err: any) {
       console.error('❌ 登入失敗:', err);
