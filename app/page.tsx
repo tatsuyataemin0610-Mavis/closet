@@ -80,10 +80,11 @@ export default function Home() {
 
   // 滾動到指定的衣服（從編輯頁返回時）
   useEffect(() => {
-    // 檢查 URL hash
+    if (clothes.length === 0) return;
+
+    // 方式 1: 檢查 URL hash（點擊儲存/取消按鈕）
     const hash = window.location.hash;
-    if (hash && clothes.length > 0) {
-      // 等待 DOM 渲染完成
+    if (hash) {
       setTimeout(() => {
         const element = document.querySelector(hash);
         if (element) {
@@ -91,8 +92,25 @@ export default function Home() {
             behavior: 'smooth', 
             block: 'center' 
           });
-          // 清除 hash（可選）
-          // window.history.replaceState(null, '', window.location.pathname + window.location.search);
+          // 清除 hash，避免重複滾動
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+      }, 300);
+      return;
+    }
+
+    // 方式 2: 檢查 sessionStorage（使用瀏覽器返回按鈕）
+    const lastEditedClothId = sessionStorage.getItem('lastEditedClothId');
+    if (lastEditedClothId) {
+      setTimeout(() => {
+        const element = document.getElementById(`cloth-${lastEditedClothId}`);
+        if (element) {
+          element.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+          // 清除 sessionStorage，避免重複滾動
+          sessionStorage.removeItem('lastEditedClothId');
         }
       }, 300);
     }

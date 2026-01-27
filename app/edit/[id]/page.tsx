@@ -31,6 +31,8 @@ export default function EditClothPage() {
   useEffect(() => {
     if (params.id) {
       fetchCloth(String(params.id));
+      // 保存當前編輯的衣服 ID 到 sessionStorage，以便返回時滾動
+      sessionStorage.setItem('lastEditedClothId', String(params.id));
     }
   }, [params.id]);
 
