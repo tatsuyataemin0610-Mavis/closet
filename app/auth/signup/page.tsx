@@ -35,7 +35,7 @@ export default function SignupPage() {
       await signUp(email, password);
       setSuccess(true);
       setTimeout(() => {
-        router.push('/closet');
+        window.location.href = '/closet';
       }, 2000);
     } catch (err: any) {
       setError(err.message || '註冊失敗，請稍後再試');

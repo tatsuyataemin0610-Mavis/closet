@@ -21,12 +21,13 @@ export default function LoginPage() {
       console.log('🔐 開始登入...', { email });
       const result = await signIn(email, password);
       console.log('✅ 登入成功！', result);
-      router.push('/closet');
-      router.refresh();
+      
+      // 使用 window.location 強制完整頁面刷新，確保 session 被正確載入
+      console.log('🔄 跳轉到 /closet...');
+      window.location.href = '/closet';
     } catch (err: any) {
       console.error('❌ 登入失敗:', err);
       setError(err.message || '登入失敗，請檢查帳號和密碼');
-    } finally {
       setLoading(false);
     }
   };
