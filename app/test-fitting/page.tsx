@@ -320,7 +320,7 @@ export default function TestFittingPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 max-h-96 overflow-y-auto p-3 bg-stone-50 rounded-xl border border-stone-200">
-                  {clothes.map((cloth) => {
+                  {(clothes || []).map((cloth) => {
                     const isSelected = selectedClothIds.has(cloth.id);
                     return (
                       <div

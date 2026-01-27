@@ -184,6 +184,7 @@ export default function ClosetPage() {
   };
 
   const getDrawerClothes = (drawer: Drawer) => {
+    if (!Array.isArray(clothes) || !Array.isArray(drawer.clothIds)) return [];
     return drawer.clothIds
       .map(id => clothes.find(c => c.id === id))
       .filter((c): c is Cloth => c !== undefined)
@@ -191,6 +192,7 @@ export default function ClosetPage() {
   };
 
   const getDrawerCount = (drawer: Drawer) => {
+    if (!Array.isArray(drawer.clothIds)) return 0;
     return drawer.clothIds.length;
   };
 
@@ -372,6 +374,7 @@ export default function ClosetPage() {
   };
 
   const getOutfitClothes = (outfit: Outfit) => {
+    if (!Array.isArray(clothes) || !Array.isArray(outfit.clothIds)) return [];
     return outfit.clothIds
       .map(id => clothes.find(c => c.id === id))
       .filter((c): c is Cloth => c !== undefined);
@@ -379,6 +382,7 @@ export default function ClosetPage() {
 
   // 從所有衣服中提取出現的顏色大分類
   const availableColors = useMemo(() => {
+    if (!Array.isArray(clothes)) return [];
     const colorCategorySet = new Set<string>();
     clothes.forEach(cloth => {
       if (cloth.color) {
@@ -391,6 +395,7 @@ export default function ClosetPage() {
 
   // 從所有衣服中提取出現的品牌
   const availableBrands = useMemo(() => {
+    if (!Array.isArray(clothes)) return [];
     const brandSet = new Set<string>();
     clothes.forEach(cloth => {
       if (cloth.brand && cloth.brand.trim() !== '') {
@@ -402,6 +407,7 @@ export default function ClosetPage() {
 
   // 根據篩選條件過濾衣服
   const filteredClothesForOutfit = useMemo(() => {
+    if (!Array.isArray(clothes)) return [];
     let filtered = clothes;
     
     // 類別篩選
@@ -568,7 +574,7 @@ export default function ClosetPage() {
 
         {/* 抽屜列表 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {drawers.map((drawer, index) => {
+          {(drawers || []).map((drawer, index) => {
             const drawerClothes = getDrawerClothes(drawer);
             const count = getDrawerCount(drawer);
             const isDragging = draggedIndex === index;
@@ -715,7 +721,7 @@ export default function ClosetPage() {
 
             {/* 穿搭列表 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {outfits.map((outfit) => {
+              {(outfits || []).map((outfit) => {
                 const outfitClothes = getOutfitClothes(outfit);
                 
                 return (
@@ -1136,7 +1142,7 @@ export default function ClosetPage() {
               
               {/* 衣服選擇區域 */}
               <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 max-h-64 overflow-y-auto p-3 bg-stone-50 rounded-xl border border-stone-200 mb-6">
-                {clothes.map((cloth) => {
+                {(clothes || []).map((cloth) => {
                   const isSelected = selectedFittingClothes.includes(cloth.id);
                   return (
                     <div

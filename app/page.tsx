@@ -109,6 +109,7 @@ export default function Home() {
 
   // 從所有衣服中提取出現的顏色大分類
   const availableColors = useMemo(() => {
+    if (!Array.isArray(clothes)) return [];
     const colorCategorySet = new Set<string>();
     clothes.forEach(cloth => {
       if (cloth.color) {
@@ -121,6 +122,7 @@ export default function Home() {
 
   // 從所有衣服中提取出現的品牌
   const availableBrands = useMemo(() => {
+    if (!Array.isArray(clothes)) return [];
     const brandSet = new Set<string>();
     clothes.forEach(cloth => {
       if (cloth.brand && cloth.brand.trim() !== '') {
@@ -131,6 +133,11 @@ export default function Home() {
   }, [clothes]);
 
   useEffect(() => {
+    if (!Array.isArray(clothes)) {
+      setFilteredClothes([]);
+      return;
+    }
+    
     let filtered = clothes;
     
     // 類別篩選
