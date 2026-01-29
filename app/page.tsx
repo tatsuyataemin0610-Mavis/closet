@@ -62,9 +62,9 @@ export default function Home() {
   const [clothes, setClothes] = useState<Cloth[]>([]);
   const [filteredClothes, setFilteredClothes] = useState<Cloth[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string>('全部');
-  const [selectedColor, setSelectedColor] = useState<string>('');
-  const [selectedBrand, setSelectedBrand] = useState<string>('');
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set(['全部']));
+  const [selectedColors, setSelectedColors] = useState<Set<string>>(new Set());
+  const [selectedBrands, setSelectedBrands] = useState<Set<string>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
@@ -145,6 +145,57 @@ export default function Home() {
     }
   };
 
+  // 切換類別選擇
+  const toggleCategory = (category: string) => {
+    setSelectedCategories(prev => {
+      const newSet = new Set(prev);
+      if (category === '全部') {
+        // 如果選擇「全部」，清除其他選擇
+        return new Set(['全部']);
+      } else {
+        // 移除「全部」
+        newSet.delete('全部');
+        // 切換當前類別
+        if (newSet.has(category)) {
+          newSet.delete(category);
+          // 如果沒有選擇任何類別，回到「全部」
+          if (newSet.size === 0) {
+            return new Set(['全部']);
+          }
+        } else {
+          newSet.add(category);
+        }
+      }
+      return newSet;
+    });
+  };
+
+  // 切換顏色選擇
+  const toggleColor = (color: string) => {
+    setSelectedColors(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(color)) {
+        newSet.delete(color);
+      } else {
+        newSet.add(color);
+      }
+      return newSet;
+    });
+  };
+
+  // 切換品牌選擇
+  const toggleBrand = (brand: string) => {
+    setSelectedBrands(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(brand)) {
+        newSet.delete(brand);
+      } else {
+        newSet.add(brand);
+      }
+      return newSet;
+    });
+  };
+
   // 從所有衣服中提取出現的顏色大分類
   const availableColors = useMemo(() => {
     if (!Array.isArray(clothes)) return [];
@@ -178,27 +229,31 @@ export default function Home() {
     
     let filtered = clothes;
     
-    // 類別篩選
-    if (selectedCategory !== '全部') {
-      filtered = filtered.filter(cloth => cloth.category === selectedCategory);
+    // 類別篩選（複選）
+    if (!selectedCategories.has('全部') && selectedCategories.size > 0) {
+      filtered = filtered.filter(cloth => 
+        cloth.category && selectedCategories.has(cloth.category)
+      );
     }
     
-    // 顏色篩選（使用顏色大分類）
-    if (selectedColor && selectedColor.trim() !== '') {
+    // 顏色篩選（複選，使用顏色大分類）
+    if (selectedColors.size > 0) {
       filtered = filtered.filter(cloth => {
         if (!cloth.color) return false;
         const colorCategory = getColorCategory(cloth.color);
-        return colorCategory === selectedColor;
+        return selectedColors.has(colorCategory);
       });
     }
     
-    // 品牌篩選
-    if (selectedBrand && selectedBrand.trim() !== '') {
-      filtered = filtered.filter(cloth => cloth.brand === selectedBrand);
+    // 品牌篩選（複選）
+    if (selectedBrands.size > 0) {
+      filtered = filtered.filter(cloth => 
+        cloth.brand && selectedBrands.has(cloth.brand)
+      );
     }
     
     setFilteredClothes(filtered);
-  }, [clothes, selectedCategory, selectedColor, selectedBrand]);
+  }, [clothes, selectedCategories, selectedColors, selectedBrands]);
 
   const fetchClothes = async () => {
     try {
@@ -459,18 +514,24 @@ export default function Home() {
                 const gradientClass = categoryColor.via 
                   ? `bg-gradient-to-r ${categoryColor.from} ${categoryColor.via} ${categoryColor.to}`
                   : `bg-gradient-to-r ${categoryColor.from} ${categoryColor.to}`;
+                const isSelected = selectedCategories.has(category);
                 
                 return (
                   <button
                     key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
-                      selectedCategory === category
+                    onClick={() => toggleCategory(category)}
+                    className={`relative px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+                      isSelected
                         ? `${gradientClass} text-white shadow-md`
                         : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
                     }`}
                   >
                     {category}
+                    {isSelected && category !== '全部' && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-md">
+                        ✓
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -484,22 +545,23 @@ export default function Home() {
                   {/* 顏色大分類選項 */}
                   {availableColors.map(colorCategory => {
                     const displayColor = COLOR_CATEGORY_DISPLAY_COLORS[colorCategory] || '#808080';
+                    const isSelected = selectedColors.has(colorCategory);
                     return (
                       <button
                         key={colorCategory}
-                        onClick={() => setSelectedColor(selectedColor === colorCategory ? '' : colorCategory)}
+                        onClick={() => toggleColor(colorCategory)}
                         className={`relative w-12 h-12 rounded-2xl transition-all duration-300 border-2 overflow-hidden group ${
-                          selectedColor === colorCategory
+                          isSelected
                             ? 'border-white shadow-xl scale-110 transform ring-4 ring-white/50'
                             : 'border-white/50 hover:border-white hover:scale-105 active:scale-95 hover:shadow-lg'
                         }`}
                         style={{
                           backgroundColor: displayColor,
-                          boxShadow: selectedColor === colorCategory ? `0 20px 25px -5px ${displayColor}40, 0 10px 10px -5px ${displayColor}30` : undefined
+                          boxShadow: isSelected ? `0 20px 25px -5px ${displayColor}40, 0 10px 10px -5px ${displayColor}30` : undefined
                         }}
                         title={colorCategory}
                       >
-                        {selectedColor === colorCategory && (
+                        {isSelected && (
                           <>
                             <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
                             <div className="absolute inset-0 flex items-center justify-center">
@@ -520,24 +582,26 @@ export default function Home() {
             {availableBrands.length > 0 && (
               <div>
                 <div className="flex flex-wrap gap-2.5 md:gap-3">
-                  {availableBrands.map(brand => (
+                  {availableBrands.map(brand => {
+                    const isSelected = selectedBrands.has(brand);
+                    return (
                     <button
                       key={brand}
-                      onClick={() => setSelectedBrand(selectedBrand === brand ? '' : brand)}
+                      onClick={() => toggleBrand(brand)}
                       className={`relative px-5 py-3 rounded-2xl font-bold text-sm transition-all duration-300 border-2 overflow-hidden group ${
-                        selectedBrand === brand
+                        isSelected
                           ? 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-indigo-700 text-white border-transparent shadow-xl scale-105 transform'
                           : 'bg-white/90 backdrop-blur-sm text-stone-700 border-stone-200 hover:border-slate-300 hover:bg-gradient-to-r hover:from-slate-50 hover:to-slate-50 hover:scale-105 active:scale-95 hover:shadow-lg'
                       }`}
-                      style={selectedBrand === brand ? {
+                      style={isSelected ? {
                         boxShadow: '0 20px 25px -5px rgba(99, 102, 241, 0.4), 0 10px 10px -5px rgba(99, 102, 241, 0.2)'
                       } : undefined}
                     >
-                      {selectedBrand === brand && (
+                      {isSelected && (
                         <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
                       )}
                       <span className="relative z-10 flex items-center gap-2">
-                        {selectedBrand === brand && (
+                        {isSelected && (
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
@@ -545,7 +609,8 @@ export default function Home() {
                         {brand}
                       </span>
                     </button>
-                  ))}
+                  );
+                  })}
                 </div>
               </div>
             )}
