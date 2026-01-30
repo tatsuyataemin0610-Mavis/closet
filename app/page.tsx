@@ -617,15 +617,27 @@ export default function Home() {
 
             {/* 統計資訊 */}
             <div className="text-sm font-medium text-gray-600 bg-gray-100/80 px-4 py-3 rounded-xl">
-              {selectedCategory === '全部' && (!selectedColor || selectedColor.trim() === '') && (!selectedBrand || selectedBrand.trim() === '') ? (
+              {selectedCategories.has('全部') && selectedColors.size === 0 && selectedBrands.size === 0 ? (
                 <span>共 <span className="font-bold text-blue-600">{clothes.length}</span> 件</span>
               ) : (
                 <span>
-                  {selectedCategory !== '全部' && <span className="font-bold text-blue-600">{selectedCategory}</span>}
-                  {selectedCategory !== '全部' && (selectedColor?.trim() || selectedBrand?.trim()) && <span className="mx-2">+</span>}
-                  {selectedColor && selectedColor.trim() !== '' && <span className="font-bold text-purple-600" style={{ color: selectedColor }}>{selectedColor}</span>}
-                  {(selectedCategory !== '全部' || selectedColor?.trim()) && selectedBrand && selectedBrand.trim() !== '' && <span className="mx-2">+</span>}
-                  {selectedBrand && selectedBrand.trim() !== '' && <span className="font-bold text-indigo-600">{selectedBrand}</span>}
+                  {!selectedCategories.has('全部') && selectedCategories.size > 0 && (
+                    <span className="font-bold text-blue-600">
+                      {Array.from(selectedCategories).join(' + ')}
+                    </span>
+                  )}
+                  {(!selectedCategories.has('全部') && selectedCategories.size > 0) && (selectedColors.size > 0 || selectedBrands.size > 0) && <span className="mx-2">+</span>}
+                  {selectedColors.size > 0 && (
+                    <span className="font-bold text-purple-600">
+                      {Array.from(selectedColors).join(' + ')}
+                    </span>
+                  )}
+                  {(!selectedCategories.has('全部') || selectedColors.size > 0) && selectedBrands.size > 0 && <span className="mx-2">+</span>}
+                  {selectedBrands.size > 0 && (
+                    <span className="font-bold text-indigo-600">
+                      {Array.from(selectedBrands).join(' + ')}
+                    </span>
+                  )}
                   <span className="ml-2">：<span className="font-bold text-purple-600">{filteredClothes.length}</span> 件</span>
                 </span>
               )}
@@ -667,11 +679,17 @@ export default function Home() {
               </div>
               <h3 className="text-2xl font-extrabold text-gray-700 mb-2">
                 沒有找到 
-                {selectedCategory !== '全部' && <span className="text-blue-600">{selectedCategory}</span>}
-                {selectedCategory !== '全部' && (selectedColor?.trim() || selectedBrand?.trim()) && <span className="mx-2">+</span>}
-                {selectedColor && selectedColor.trim() !== '' && <span style={{ color: selectedColor }}>{selectedColor}</span>}
-                {(selectedCategory !== '全部' || selectedColor?.trim()) && selectedBrand && selectedBrand.trim() !== '' && <span className="mx-2">+</span>}
-                {selectedBrand && selectedBrand.trim() !== '' && <span className="text-indigo-600">{selectedBrand}</span>}
+                {!selectedCategories.has('全部') && selectedCategories.size > 0 && (
+                  <span className="text-blue-600">{Array.from(selectedCategories).join(' + ')}</span>
+                )}
+                {(!selectedCategories.has('全部') && selectedCategories.size > 0) && (selectedColors.size > 0 || selectedBrands.size > 0) && <span className="mx-2">+</span>}
+                {selectedColors.size > 0 && (
+                  <span className="text-purple-600">{Array.from(selectedColors).join(' + ')}</span>
+                )}
+                {(!selectedCategories.has('全部') || selectedColors.size > 0) && selectedBrands.size > 0 && <span className="mx-2">+</span>}
+                {selectedBrands.size > 0 && (
+                  <span className="text-indigo-600">{Array.from(selectedBrands).join(' + ')}</span>
+                )}
                 的衣服
               </h3>
               <p className="text-gray-500 mb-8 font-medium">試試選擇其他分類或新增衣服</p>
