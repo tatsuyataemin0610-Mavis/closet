@@ -347,7 +347,7 @@ export default function Home() {
     const timer = setTimeout(() => {
       setIsSelectionMode(true);
       setSelectedIds(new Set([id]));
-    }, 500); // 500ms 長按
+    }, 800); // 800ms 長按（調整為更長的時間，避免誤觸）
     setLongPressTimer(timer);
   };
 
