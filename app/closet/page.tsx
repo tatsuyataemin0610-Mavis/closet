@@ -267,9 +267,9 @@ export default function ClosetPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: newOutfitName.trim() || undefined,
-          clothIds: Array.from(selectedClothIds),
-          notes: newOutfitNotes.trim() || undefined,
+          name: newOutfitName.trim() || '未命名穿搭',
+          cloth_ids: Array.from(selectedClothIds),
+          notes: newOutfitNotes.trim() || null,
         }),
       });
 
@@ -283,9 +283,13 @@ export default function ClosetPage() {
         setFilterColor('');
         setFilterBrand('');
         fetchData();
+        alert('穿搭新增成功！');
+      } else {
+        alert('新增失敗：' + (result.error || '未知錯誤'));
       }
     } catch (error) {
       console.error('新增穿搭失敗:', error);
+      alert('新增失敗，請稍後再試');
     }
   };
 
@@ -312,9 +316,9 @@ export default function ClosetPage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: newOutfitName.trim() || undefined,
-          clothIds: Array.from(selectedClothIds),
-          notes: newOutfitNotes.trim() || undefined,
+          name: newOutfitName.trim() || '未命名穿搭',
+          cloth_ids: Array.from(selectedClothIds),
+          notes: newOutfitNotes.trim() || null,
         }),
       });
 
@@ -328,9 +332,13 @@ export default function ClosetPage() {
         setFilterColor('');
         setFilterBrand('');
         fetchData();
+        alert('穿搭更新成功！');
+      } else {
+        alert('更新失敗：' + (result.error || '未知錯誤'));
       }
     } catch (error) {
       console.error('更新穿搭失敗:', error);
+      alert('更新失敗，請稍後再試');
     }
   };
 

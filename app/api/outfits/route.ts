@@ -14,7 +14,14 @@ export async function GET() {
     
     if (error) throw error;
     
-    return NextResponse.json({ success: true, data: outfits || [] });
+    // 轉換數據格式：cloth_ids -> clothIds
+    const formattedOutfits = (outfits || []).map((outfit: any) => ({
+      ...outfit,
+      clothIds: outfit.cloth_ids,
+      cloth_ids: undefined
+    }));
+    
+    return NextResponse.json({ success: true, data: formattedOutfits });
   } catch (error: any) {
     console.error('取得穿搭列表失敗:', error);
     return NextResponse.json(
@@ -41,7 +48,14 @@ export async function POST(request: NextRequest) {
     
     if (error) throw error;
     
-    return NextResponse.json({ success: true, data });
+    // 轉換數據格式：cloth_ids -> clothIds
+    const formattedData = data ? {
+      ...data,
+      clothIds: data.cloth_ids,
+      cloth_ids: undefined
+    } : data;
+    
+    return NextResponse.json({ success: true, data: formattedData });
   } catch (error: any) {
     console.error('新增穿搭失敗:', error.message || error);
     return NextResponse.json(
