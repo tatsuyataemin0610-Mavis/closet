@@ -37,3 +37,7 @@ data/
 # uploads
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+# typescript
+tsconfig.tsbuildinfo
+_to_delete/
