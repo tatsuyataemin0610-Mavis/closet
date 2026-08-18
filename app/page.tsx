@@ -695,9 +695,9 @@ export default function Home() {
               <p className="text-gray-500 mb-8 font-medium">試試選擇其他分類或新增衣服</p>
               <button
                 onClick={() => {
-                  setSelectedCategory('全部');
-                  setSelectedColor('');
-                  setSelectedBrand('');
+                  setSelectedCategories(new Set(['全部']));
+                  setSelectedColors(new Set());
+                  setSelectedBrands(new Set());
                 }}
                 className="px-8 py-3 bg-gradient-to-r from-slate-400 to-slate-600 hover:from-slate-500 hover:to-slate-700 text-white rounded-2xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
               >
